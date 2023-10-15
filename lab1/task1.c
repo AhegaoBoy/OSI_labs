@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
         printf("Введите нужное количество аргументов\n");
         return ARGUMENTS_QUANTITY;
     }
-    char buf[5];
+    unsigned char buf[5];
     char* dir = *(argv + 1);
     FILE* insert;
     insert = fopen(dir, "wb");
@@ -25,10 +25,16 @@ int main(int argc, char* argv[])
         return FILE_DIRECTORY;
     }
 
-    char* str = "Hello World!";
-    if (fwrite(str, sizeof(char),  12, insert) != 12)
+    unsigned char byte_3 = 3;
+    unsigned char byte_1 = 1;
+    unsigned char byte_4 = 4;
+    unsigned char byte_5 = 5;
+    unsigned char byte_9 = 9;
+    unsigned char byte_2 = 2;
+    unsigned char byte_6 = 6;
+    if (fwrite(&byte_3, sizeof(byte_3), 1, insert) != 1 || fwrite(&byte_1, sizeof(byte_1), 1, insert) != 1 || fwrite(&byte_4, sizeof(byte_4), 1, insert) != 1 || fwrite(&byte_1, sizeof(byte_1), 1, insert) != 1 || fwrite(&byte_5, sizeof(byte_5), 1, insert) != 1 || fwrite(&byte_9, sizeof(byte_9), 1, insert) != 1 || fwrite(&byte_2, sizeof(byte_2), 1, insert) != 1 ||fwrite(&byte_6, sizeof(byte_6), 1, insert) != 1 || fwrite(&byte_5, sizeof(byte_5), 1, insert) != 1 || fwrite(&byte_3, sizeof(byte_3), 1, insert) != 1 || fwrite(&byte_5, sizeof(byte_5), 1, insert) != 1)
     {
-        printf("INSERTING STRING %s HAS BEEN FAILED\n", str);
+        printf("INSERTING BYTES HAS BEEN FAILED\n");
         fclose(insert);
         return INPUT_OUTPUT_ERROR;
     }
@@ -42,9 +48,10 @@ int main(int argc, char* argv[])
         return INPUT_OUTPUT_ERROR;
     }
 
-    char c = fgetc(output);
-    while (!feof(output))
+    unsigned char c;
+    do
     {
+        fread(&c, sizeof(c), 1, output);
         printf("Current byte: %c\n", c);
         printf("\tFlag: %d\n", output->_flags);
         printf("\tCurrent read pointer: %s\n", output->_IO_read_ptr);
@@ -65,10 +72,10 @@ int main(int argc, char* argv[])
         printf("\tCurrent column: %d\n", output->_cur_column);
         printf("\t_vtable_offset (Virtual table): %c\n", output->_vtable_offset);
         printf("\t_shortbuf: %s\n", output->_shortbuf);
-        c = fgetc(output);
-    }
+
+    }while (!feof(output));
     fclose(output);
-    output = fopen(argv[1], "r");
+    output = fopen(argv[1], "rb");
     if(output == NULL)
     {
         printf("Can't open file at %s\n", argv[1]);
