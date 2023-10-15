@@ -103,15 +103,12 @@ unsigned int for_xor_32(FILE* input)
     {
         int i = 1;
         unsigned int current_group = 0;
-        for(i; i<=4;  ++i)
-        {
-            fread(&c, sizeof(unsigned char), 1, input);
-            if(feof(input)) break;
-            unsigned int tmp = 0;
-            tmp |= c;
-            tmp <<= 8*(4 - i);
-            current_group |=tmp;
-        }
+        fread(&current_group, 4*sizeof(unsigned char), 4, input);
+
+        if(current_group <= 255) current_group <<= 8*3;
+        else if(current_group <= 65535) current_group <<=8*2;
+        else if(current_group <= 16777215) current_group <<=8;
+
         result ^= current_group;
     }
     return result;
