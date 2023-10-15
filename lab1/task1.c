@@ -12,12 +12,12 @@ int main(int argc, char* argv[])
 {
     if(argc < 2)
     {
-        printf("Введите нужное количество аргументов\n");
+        printf("PLEASE, INPUT CORRECT NUMBER OF ARGUMENTS\n");
         return ARGUMENTS_QUANTITY;
     }
     unsigned char buf[5];
     char* dir = *(argv + 1);
-    FILE* insert;
+    FILE* insert = NULL;
     insert = fopen(dir, "wb");
     if(insert == NULL)
     {
@@ -25,34 +25,31 @@ int main(int argc, char* argv[])
         return FILE_DIRECTORY;
     }
 
-    unsigned char byte_3 = 3;
-    unsigned char byte_1 = 1;
-    unsigned char byte_4 = 4;
-    unsigned char byte_5 = 5;
-    unsigned char byte_9 = 9;
-    unsigned char byte_2 = 2;
-    unsigned char byte_6 = 6;
-    if (fwrite(&byte_3, sizeof(byte_3), 1, insert) != 1 || fwrite(&byte_1, sizeof(byte_1), 1, insert) != 1 || fwrite(&byte_4, sizeof(byte_4), 1, insert) != 1 || fwrite(&byte_1, sizeof(byte_1), 1, insert) != 1 || fwrite(&byte_5, sizeof(byte_5), 1, insert) != 1 || fwrite(&byte_9, sizeof(byte_9), 1, insert) != 1 || fwrite(&byte_2, sizeof(byte_2), 1, insert) != 1 ||fwrite(&byte_6, sizeof(byte_6), 1, insert) != 1 || fwrite(&byte_5, sizeof(byte_5), 1, insert) != 1 || fwrite(&byte_3, sizeof(byte_3), 1, insert) != 1 || fwrite(&byte_5, sizeof(byte_5), 1, insert) != 1)
+    unsigned char bytes[11] = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5};
+    for(int i = 0; i<11; ++i)
     {
-        printf("INSERTING BYTES HAS BEEN FAILED\n");
-        fclose(insert);
-        return INPUT_OUTPUT_ERROR;
+        if(fwrite(&bytes[i], sizeof(unsigned char), 1, insert) != 1)
+        {
+            printf("BYTES INPUT WAS FAILED\n");
+            fclose(insert);
+            return INPUT_OUTPUT_ERROR;
+        }
     }
     fclose(insert);
 
-    FILE* output;
+    FILE* output = NULL;
     output = fopen(dir, "rb");
     if(output == NULL)
     {
         perror("FILE HASN'T BEEN OPENED FOR READING");
-        return INPUT_OUTPUT_ERROR;
+        return FILE_DIRECTORY;
     }
 
     unsigned char c;
     do
     {
         fread(&c, sizeof(c), 1, output);
-        printf("Current byte: %c\n", c);
+        printf("Current byte: %d\n", c);
         printf("\tFlag: %d\n", output->_flags);
         printf("\tCurrent read pointer: %s\n", output->_IO_read_ptr);
         printf("\tEnd of get area: %s\n", output->_IO_read_end);
@@ -75,15 +72,17 @@ int main(int argc, char* argv[])
 
     }while (!feof(output));
     fclose(output);
-    output = fopen(argv[1], "rb");
+
+    output = fopen(dir, "rb");
     if(output == NULL)
     {
-        printf("Can't open file at %s\n", argv[1]);
+        printf("Can't open file at %s\n", dir);
         return 0;
     }
     fseek(output, 3, SEEK_SET);
     fread(&buf, sizeof(char), 4, output);
     fclose(output);
-    printf("\n%s", buf);
+    printf("\nbuffer: ");
+    for(int i = 0; i<5; ++i) printf("%d ", buf[i]);
     return 0;
 }
