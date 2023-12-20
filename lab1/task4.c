@@ -103,11 +103,9 @@ unsigned int for_xor_32(FILE* input)
     {
         int i = 1;
         unsigned int current_group = 0;
-        fread(&current_group, 4*sizeof(unsigned char), 4, input);
 
-        if(current_group <= 255) current_group <<= 8*3;
-        else if(current_group <= 65535) current_group <<=8*2;
-        else if(current_group <= 16777215) current_group <<=8;
+        size_t read_bytes = fread(&current_group, 4*sizeof(unsigned char), 4, input);
+        if(read_bytes != 4) current_group <<= (4 - read_bytes)*8;
 
         result ^= current_group;
     }
@@ -163,10 +161,7 @@ int validations_of_symbol(char* str, int base)
             {
                 if(str[i] - 'a' + 10 >= base) return NOT_IN_BASE;
             }
-            else
-            {
-                return INCORRECT_SYMBOL;
-            }
+            else  return INCORRECT_SYMBOL;
         }
     }
     return 0;
@@ -175,27 +170,26 @@ int validations_of_symbol(char* str, int base)
 unsigned int for_mask(FILE* input, unsigned int hex)
 {
     int count = 0;
-    unsigned char c;
-    while(!feof(input))
+    unsigned int current_number = 0;
+    size_t read_bytes;
+    int i;
+    for(i = 0; i < 4; ++i)
     {
-        unsigned int current_number = 0;
-        int i = 1;
-        for(i; i<=4; ++i)
+        unsigned char tmp;
+        fread(&tmp, sizeof(unsigned char), 1, input);
+        if(tmp == 0)
         {
-            fread(&c, sizeof(unsigned char), 1, input);
-            if(feof(input)) break;
-            unsigned int tmp = 0;
-            tmp |= c;
-            current_number |= tmp;
-            if(current_number == hex)
-            {
-                count++;
-                break;
-            }
-            current_number <<= 8;
+            current_number <<= (4 - i)*8;
+            break;
         }
-        if(feof(input)) break;
-        fseek(input, i == 5 ? -3: -i + 1, SEEK_CUR);
+        current_number = (i == 3 ? current_number | tmp : (current_number | tmp) << 8 );
     }
+    do
+    {
+        if((hex & current_number) == hex) count++;
+        unsigned char c = 0;
+        read_bytes = fread(&c, sizeof(unsigned char), 1, input);
+        if(read_bytes == 1) current_number = (current_number << 8) | c;
+    }while(!feof(input));
     return count;
 }
