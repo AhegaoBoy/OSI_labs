@@ -104,7 +104,7 @@ unsigned int for_xor_32(FILE* input)
         int i = 1;
         unsigned int current_group = 0;
 
-        size_t read_bytes = fread(&current_group, 4*sizeof(unsigned char), 4, input);
+        size_t read_bytes = fread(&current_group, sizeof(unsigned char), 4, input);
         if(read_bytes != 4) current_group <<= (4 - read_bytes)*8;
 
         result ^= current_group;

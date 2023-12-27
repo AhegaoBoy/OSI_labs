@@ -14,7 +14,8 @@ typedef enum status_code {
     MEMORY_ALLOCATION_ERROR,
     INVALID_PARAM,
     REGISTER_AUTHORIZED,
-    REGISTER_NON_AUTHORIZED
+    REGISTER_NON_AUTHORIZED,
+    NOT_NUMBER
 } status_code;
 
 typedef enum status_cmd {
@@ -49,6 +50,7 @@ void destroy_storage(Node** head);
 status_code create_user(const char* log, int pin, User** person);
 status_code make_sanctions(Node* list, const char* log, char* number, User* user);
 status_code get_elapsed_time(char* time_start, char *flag);
+status_code validation_of_number(char* number);
 void print_menu_non_authorized();
 void print_menu_authorized();
 void get_time();
@@ -61,6 +63,7 @@ int main() {
     bool authorized = false;
     int pincode;
     char login[32];
+    char password[32];
     int counter_procedures = 0;
     int approve_value;
     User* _user;
@@ -73,8 +76,15 @@ int main() {
             scanf("%s", login);
             getchar();
             printf("Pincode: ");
-            scanf("%d", &pincode);
+            scanf("%s", password);
             getchar();
+            status_code valid_number = validation_of_number(password);
+            if(valid_number != SUCCESS)
+            {
+                printf("PASSWORD CONTAINS ONLY NUMBERS\n");
+                continue;
+            }
+            pincode = atoi(password);
             status_code creation = create_user(login, pincode, &_user);
             switch (creation) {
                 case SUCCESS:
@@ -83,13 +93,13 @@ int main() {
                     printf("MEMORY ALLOCATION ERROR\n");
                     exit(1);
                 case INVALID_PARAM:
-                    printf("LENGTH OF USERNAME MUST BE LESS THAN 6\n");
+                    printf("INVALID USERNAME OR PASSWORD\n");
                     continue;
             }
             status_code status_exist = register_user(&storage, &_user);
             switch (status_exist) {
                 case REGISTER_AUTHORIZED:
-                    printf("You successfully authorized, user: %s\n", login);
+                    printf("You've already created account, no need to registrate again, user: %s\n", login);
                     authorized = true;
                     break;
                 case REGISTER_NON_AUTHORIZED:
@@ -99,6 +109,8 @@ int main() {
                 case MEMORY_ALLOCATION_ERROR:
                     printf("Error malloc detected!\n");
                     return MEMORY_ALLOCATION_ERROR;
+                default:
+                    printf("Wrong password, try again :)\n");
             }
         }
         else
@@ -179,6 +191,16 @@ int main() {
 
     destroy_storage(&storage);
     return 0;
+}
+status_code validation_of_number(char* number)
+{
+    int i = 0;
+    while(number[i] != '\0')
+    {
+        if(!isdigit(number[i])) return NOT_NUMBER;
+        ++i;
+    }
+    return SUCCESS;
 }
 
 int get_sanctions(User* id)
